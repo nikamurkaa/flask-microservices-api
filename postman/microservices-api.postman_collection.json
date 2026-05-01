@@ -1,0 +1,238 @@
+{
+  "info": {
+    "name": "Flask Microservices API",
+    "_postman_id": "d7c8b9f0-5c15-47d2-9d64-7f6b83c3c101",
+    "description": "Postman collection for user-service and order-service.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "System",
+      "item": [
+        {
+          "name": "User Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{user_service_url}}/health",
+              "host": ["{{user_service_url}}"],
+              "path": ["health"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Service is user-service', function () { pm.expect(pm.response.json().service).to.eql('user-service'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Order Service Health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{order_service_url}}/health",
+              "host": ["{{order_service_url}}"],
+              "path": ["health"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Service is order-service', function () { pm.expect(pm.response.json().service).to.eql('order-service'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Create User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Alice\",\n  \"email\": \"alice@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{user_service_url}}/users",
+              "host": ["{{user_service_url}}"],
+              "path": ["users"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const user = pm.response.json();",
+                  "pm.environment.set('user_id', user.id);",
+                  "pm.test('User id saved', function () { pm.expect(pm.environment.get('user_id')).to.exist; });",
+                  "pm.test('Response contains email', function () { pm.expect(user.email).to.eql('alice@example.com'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{user_service_url}}/users/{{user_id}}",
+              "host": ["{{user_service_url}}"],
+              "path": ["users", "{{user_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains id', function () { pm.expect(pm.response.json()).to.have.property('id'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Create Order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": {{user_id}},\n  \"item\": \"Book\",\n  \"price\": 10.5\n}"
+            },
+            "url": {
+              "raw": "{{order_service_url}}/orders",
+              "host": ["{{order_service_url}}"],
+              "path": ["orders"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 201', function () { pm.response.to.have.status(201); });",
+                  "const order = pm.response.json();",
+                  "pm.environment.set('order_id', order.id);",
+                  "pm.test('Order contains user fields', function () {",
+                  "  pm.expect(order).to.have.property('user_name');",
+                  "  pm.expect(order).to.have.property('user_email');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Order",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{order_service_url}}/orders/{{order_id}}",
+              "host": ["{{order_service_url}}"],
+              "path": ["orders", "{{order_id}}"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Response contains item', function () { pm.expect(pm.response.json()).to.have.property('item'); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create Order - Unknown User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": 99999,\n  \"item\": \"Notebook\",\n  \"price\": 5.5\n}"
+            },
+            "url": {
+              "raw": "{{order_service_url}}/orders",
+              "host": ["{{order_service_url}}"],
+              "path": ["orders"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 400', function () { pm.response.to.have.status(400); });",
+                  "pm.test('Error response', function () { pm.expect(pm.response.json()).to.have.property('error'); });"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "user_service_url",
+      "value": "http://127.0.0.1:5001"
+    },
+    {
+      "key": "order_service_url",
+      "value": "http://127.0.0.1:5002"
+    }
+  ]
+}
