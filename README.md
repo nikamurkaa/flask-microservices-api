@@ -126,7 +126,7 @@ Postman: [`postman/`](postman/).
 
 ## Статус
 
-Проект завершён и используется как portfolio case по **Flask, REST API, service-to-service communication, testing и containerization**.
+Проект завершён. Основные технические акценты — **Flask, REST API, service-to-service communication, testing и containerization**.
 
 ## Автор
 
